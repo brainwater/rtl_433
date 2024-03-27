@@ -786,6 +786,17 @@ mappings = {
         }
     },
 
+    "volume_gal": {
+        "device_type": "sensor",
+        "object_suffix": "volume_gal",
+        "config": {
+            "device_class": "volume",
+            "name": "Volume",
+            "unit_of_measurement": "gal",
+            "value_template": "{{ value|int }}",
+            "state_class": "total"
+        }
+    },
 }
 
 # Use secret_knock to trigger device automations for Honeywell ActivLink
