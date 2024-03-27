@@ -18,7 +18,7 @@ as device topics by MQTT.
 """
 
 AP_EPILOG="""
-It is strongly recommended to run rtl_433 with "-C si" and "-M newmodel".
+It is strongly recommended to run rtl_433 with "-C si".
 This script requires rtl_433 to publish both event messages and device
 messages. If you've changed the device topic in rtl_433, use the same device
 topic with the "-T" parameter.
@@ -190,6 +190,19 @@ mappings = {
         }
     },
 
+    "battery_mV": {
+        "device_type": "sensor",
+        "object_suffix": "mV",
+        "config": {
+            "device_class": "voltage",
+            "name": "Battery mV",
+            "unit_of_measurement": "mV",
+            "value_template": "{{ float(value) }}",
+            "state_class": "measurement",
+            "entity_category": "diagnostic"
+        }
+    },
+
     "humidity": {
         "device_type": "sensor",
         "object_suffix": "H",
@@ -226,13 +239,25 @@ mappings = {
 
     "moisture": {
         "device_type": "sensor",
-        "object_suffix": "H",
+        "object_suffix": "M",
         "config": {
-            "device_class": "humidity",
+            "device_class": "moisture",
             "name": "Moisture",
             "unit_of_measurement": "%",
             "value_template": "{{ value|float }}",
             "state_class": "measurement"
+        }
+    },
+
+    "detect_wet": {
+        "device_type": "binary_sensor",
+        "object_suffix": "moisture",
+        "config": {
+            "name": "Water Sensor",
+            "device_class": "moisture",
+            "force_update": "true",
+            "payload_on": "1",
+            "payload_off": "0"
         }
     },
 
@@ -409,8 +434,8 @@ mappings = {
         "config": {
             "device_class": "precipitation",
             "name": "Rain Total",
-            "unit_of_measurement": "mm",
-            "value_template": "{{ (float(value|float) * 25.4) | round(2) }}",
+            "unit_of_measurement": "in",
+            "value_template": "{{ value|float|round(2) }}",
             "state_class": "total_increasing"
         }
     },
@@ -424,6 +449,30 @@ mappings = {
             "unit_of_measurement": "mm/h",
             "value_template": "{{ (float(value|float) * 25.4) | round(2) }}",
             "state_class": "measurement"
+        }
+    },
+
+    "reed_open": {
+        "device_type": "binary_sensor",
+        "object_suffix": "reed_open",
+        "config": {
+            "device_class": "safety",
+            "force_update": "true",
+            "payload_on": "1",
+            "payload_off": "0",
+            "entity_category": "diagnostic"
+        }
+    },
+
+    "contact_open": {
+        "device_type": "binary_sensor",
+        "object_suffix": "contact_open",
+        "config": {
+            "device_class": "safety",
+            "force_update": "true",
+            "payload_on": "1",
+            "payload_off": "0",
+            "entity_category": "diagnostic"
         }
     },
 
@@ -509,7 +558,7 @@ mappings = {
             "state_class": "measurement"
         }
     },
-  
+
     "energy_kWh": {
         "device_type": "sensor",
         "object_suffix": "kwh",
@@ -521,19 +570,19 @@ mappings = {
             "state_class": "measurement"
         }
     },
-  
+
     "current_A": {
         "device_type": "sensor",
         "object_suffix": "A",
         "config": {
-            "device_class": "power",
+            "device_class": "current",
             "name": "Current",
             "unit_of_measurement": "A",
             "value_template": "{{ value|float }}",
             "state_class": "measurement"
         }
     },
-  
+
     "voltage_V": {
         "device_type": "sensor",
         "object_suffix": "V",
@@ -550,8 +599,9 @@ mappings = {
         "device_type": "sensor",
         "object_suffix": "lux",
         "config": {
+            "device_class": "illuminance",
             "name": "Outside Luminance",
-            "unit_of_measurement": "lux",
+            "unit_of_measurement": "lx",
             "value_template": "{{ value|int }}",
             "state_class": "measurement"
         }
@@ -560,8 +610,9 @@ mappings = {
         "device_type": "sensor",
         "object_suffix": "lux",
         "config": {
+            "device_class": "illuminance",
             "name": "Outside Luminance",
-            "unit_of_measurement": "lux",
+            "unit_of_measurement": "lx",
             "value_template": "{{ value|int }}",
             "state_class": "measurement"
         }
@@ -583,6 +634,17 @@ mappings = {
         "config": {
             "name": "UV Index",
             "unit_of_measurement": "UV Index",
+            "value_template": "{{ value|int }}",
+            "state_class": "measurement"
+        }
+    },
+
+    "storm_dist_km": {
+        "device_type": "sensor",
+        "object_suffix": "stdist",
+        "config": {
+            "name": "Lightning Distance",
+            "unit_of_measurement": "km",
             "value_template": "{{ value|int }}",
             "state_class": "measurement"
         }
@@ -629,7 +691,7 @@ mappings = {
             "state_class": "total_increasing",
         }
     },
-  
+
     "consumption": {
         "device_type": "sensor",
         "object_suffix": "consumption",
@@ -657,6 +719,70 @@ mappings = {
            "automation_type": "trigger",
            "type": "button_short_release",
            "subtype": "button_1",
+        }
+    },
+
+    # WH45, WH290
+    "pm2_5_ug_m3": {
+        "device_type": "sensor",
+        "object_suffix": "PM25",
+        "config": {
+            "device_class": "pm25",
+            "name": "PM 2.5 Concentration",
+            "unit_of_measurement": "µg/m³",
+            "value_template": "{{ value|float }}",
+            "state_class": "measurement"
+        }
+    },
+
+    # WH45
+    "pm10_ug_m3": {
+        "device_type": "sensor",
+        "object_suffix": "PM10",
+        "config": {
+            "device_class": "pm10",
+            "name": "PM 10 Concentration",
+            "unit_of_measurement": "µg/m³",
+            "value_template": "{{ value|float }}",
+            "state_class": "measurement"
+        }
+    },
+
+    # WH290
+    "estimated_pm10_0_ug_m3": {
+        "device_type": "sensor",
+        "object_suffix": "PM10",
+        "config": {
+            "device_class": "pm10",
+            "name": "Estimated PM 10 Concentration",
+            "unit_of_measurement": "µg/m³",
+            "value_template": "{{ value|float }}",
+            "state_class": "measurement"
+        }
+    },
+
+    # WH45
+    "co2_ppm": {
+        "device_type": "sensor",
+        "object_suffix": "CO2",
+        "config": {
+            "device_class": "carbon_dioxide",
+            "name": "CO2 Concentration",
+            "unit_of_measurement": "ppm",
+            "value_template": "{{ value|int }}",
+            "state_class": "measurement"
+        }
+    },
+
+    "ext_power": {
+        "device_type": "binary_sensor",
+        "object_suffix": "extpwr",
+        "config": {
+            "device_class": "power",
+            "name": "External Power",
+            "payload_on": "1",
+            "payload_off": "0",
+            "entity_category": "diagnostic"
         }
     },
 
@@ -823,7 +949,7 @@ def bridge_event_to_hass(mqttc, topic_prefix, data):
     base_topic, device_id = rtl_433_device_info(data, topic_prefix)
     if not device_id:
         # no unique device identifier
-        logging.warning("No suitable identifier found for model: ", model)
+        logging.warning("No suitable identifier found for model: %s", model)
         return
 
     if args.ids and "id" in data and data.get("id") not in args.ids:
